@@ -1,5 +1,5 @@
 # Telegram-Poll-Bot
-2nd project - System Engineering, Telegram bot for sending surveys to community members,
+2nd project - Systems Programming, Telegram bot for sending surveys to community members,
 utilizing java swing and chatGPT API . 
 by Yaniv. H
 
