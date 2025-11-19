@@ -110,7 +110,7 @@ public class TelegramPollBot extends TelegramLongPollingBot {
             System.out.println("Theres already an active poll, pls wait till its done");
             return false;
         }
-        if (community.size() < 1) { //update to 3
+        if (community.size() < 3) {
             System.out.println("Need at last 3 members to create a poll.");
             return false;
         }
