@@ -112,7 +112,7 @@ public class PollCreatorPanel extends JFrame {
 
     private void sendSurvey(ActionEvent e) {
         // check community size first
-        if (bot.getCommunitySize() < 3) {
+        if (bot.getCommunitySize() < 1) { // update to 3
             JOptionPane.showMessageDialog(this,
                     "Need at least 3 members to send a survey.",
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -128,6 +128,9 @@ public class PollCreatorPanel extends JFrame {
                     ". Each question should have " + numAnswers + " possible answers.";
             gptClient.sendMessage(prompt);
             String gptResponse = gptClient.getLastResponse();
+            System.out.println("=== GPT RAW RESPONSE START ===");
+            System.out.println(gptResponse);
+            System.out.println("=== GPT RAW RESPONSE END ===");
             JOptionPane.showMessageDialog(this,
                     "GPT generated the following questions:\n\n" + gptResponse,
                     "GPT Response", JOptionPane.INFORMATION_MESSAGE);
