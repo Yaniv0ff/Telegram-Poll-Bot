@@ -8,6 +8,7 @@ public class GptParser {
     public static List<Question> parseResponse(String gptResponse) {
         List<Question> questions = new ArrayList<>();
         if (gptResponse == null || gptResponse.isEmpty()) return questions;
+
         String[] lines = gptResponse.split("\\r?\\n");
         String currentQ = null;
         List<String> opts = new ArrayList<>();
@@ -16,40 +17,43 @@ public class GptParser {
             String line = rawLine.trim();
             if (line.isEmpty()) continue;
 
-            // detect question lines
+            // detect question headers
             if (line.matches("(?i)^(#+\\s*)?(question|שאלה)\\s*\\d+:?.*") || line.matches("^\\d+\\.\\s.*")) {
                 // save previous question if exists
                 if (currentQ != null && !opts.isEmpty()) {
                     questions.add(new Question(currentQ.trim(), new ArrayList<>(opts)));
                     opts.clear();
                 }
-                // extract text
-                if (line.contains(":")) {
-                    int idx = line.indexOf(":");
-                    currentQ = line.substring(idx + 1).trim();
-                } else {
-                    currentQ = line.replaceFirst("(?i)^(#+\\s*)?(question|שאלה)\\s*\\d+\\s*", "").trim();
-                }
-                continue;
-            }
 
-            // detect actual question text lines
-            if (currentQ != null && !line.matches("^[A-Da-d][).].*") && !line.matches("^[אבגדה]\\.?\\s*.*")) {
-                if (currentQ.isEmpty()) currentQ = line.trim();
-                else currentQ += " " + line.trim();
+                // remove markdown and numbering
+                currentQ = line
+                        .replaceFirst("(?i)^(#+\\s*)?(question|שאלה)\\s*\\d+:?\\s*", "")
+                        .replaceFirst("^\\d+\\.\\s*", "")
+                        .replaceAll("\\*\\*", "")
+                        .trim();
                 continue;
             }
 
             // detect options
-            if (line.matches("^[A-Da-d][).]\\s*.*") || line.matches("^[אבגדה]\\.?\\s*.*")) {
-                String optionText = line.replaceFirst("^[A-Da-d][).]\\s*|^[אבגדה]\\.?\\s*", "").trim();
+            if (line.matches("(?i)^[-•]?[\\s]*[A-Da-dא-ד][).:\\-]?\\s+.*")) {
+                String optionText = line
+                        .replaceFirst("(?i)^[-•]?[\\s]*[A-Da-dא-ד][).:\\-]?\\s+", "")
+                        .replaceAll("\\*\\*", "")
+                        .trim();
                 if (!optionText.isEmpty()) opts.add(optionText);
+                continue;
+            }
+
+            // detect question continuation lines
+            if (currentQ != null && !line.matches("(?i)^[-•]?[\\s]*[A-Da-dא-ד][).:\\-]?\\s+.*")) {
+                if (currentQ.isEmpty()) currentQ = line.replaceAll("\\*\\*", "").trim();
+                else currentQ += " " + line.replaceAll("\\*\\*", "").trim();
             }
         }
 
-        // add last question if exists
+        // add last question
         if (currentQ != null && !opts.isEmpty()) {
-            questions.add(new Question(currentQ.trim(), opts));
+            questions.add(new Question(currentQ.trim(), new ArrayList<>(opts)));
         }
 
         return questions;
